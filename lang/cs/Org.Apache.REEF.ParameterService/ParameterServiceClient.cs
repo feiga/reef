@@ -82,21 +82,13 @@ namespace Org.Apache.REEF.ParameterService
         [NamedParameter("The set of <ip:port> where the servers are listening")]
         public class ComponentAddresses : Name<ISet<string>> { }
 
-        [NamedParameter("The number of tables of parameters to be configured on the parameter server")]
-        public class NumberOfTables : Name<int> { }
-
-        [NamedParameter("The number of rows of parameters per table to be configured on the parameter server")]
-        public class NumberOfRows : Name<int> { }
-
-        [NamedParameter("The number of parameters for each row of every table to be configured on the parameter server")]
-        public class NumberOfColumns : Name<int> { }
+        [NamedParameter("Configuration representing the number tables, rows and columns of parameters to be created")]
+        public class TablesRowsColumns : Name<string> { }
     }
 
     internal class ParameterServiceClient : IParameterServiceClient
     {
-        private readonly int _numberOfTables;
-        private readonly int _numberOfRows;
-        private readonly int _numberOfColumns;
+        private readonly int[][] _tablesRowsColumns;
         private readonly CommunicationType _commType;
         private readonly SynchronizationType _syncType;
 
@@ -106,9 +98,7 @@ namespace Org.Apache.REEF.ParameterService
         internal ParameterServiceClient([Parameter(typeof(ParameterClientConfig.CommunicationType))] string commType,
             [Parameter(typeof(ParameterClientConfig.SynchronizationType))] string syncType,
             [Parameter(typeof(ParameterClientConfig.ComponentAddresses))] IEnumerable<string> componentAddrPorts,
-            [Parameter(typeof(ParameterClientConfig.NumberOfTables))] int numberOfTables,
-            [Parameter(typeof(ParameterClientConfig.NumberOfRows))] int numberOfRows,
-            [Parameter(typeof(ParameterClientConfig.NumberOfColumns))] int numberOfColumns,
+            [Parameter(typeof(ParameterClientConfig.TablesRowsColumns))] string  tablesRowsColumns,
             IParameterServer parameterServer,
             IParameterClient parameterClient)
         {
@@ -133,9 +123,7 @@ namespace Org.Apache.REEF.ParameterService
             parameterServer.UpdateOtherComponentAddresses(componentAddressPorts);
             parameterClient.UpdateOtherComponentAddresses(componentAddressPorts);
 
-            _numberOfTables = numberOfTables;
-            _numberOfRows = numberOfRows;
-            _numberOfColumns = numberOfColumns;
+            _tablesRowsColumns = tablesRowsColumns.Split('|').Select(rowsStr => rowsStr.Split(':').Select(c=>Convert.ToInt32(c)).ToArray()).ToArray();
         }
 
         public void Dispose()

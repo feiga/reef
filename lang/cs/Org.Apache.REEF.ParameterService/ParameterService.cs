@@ -75,9 +75,7 @@ namespace Org.Apache.REEF.ParameterService
 
         private int _numTasks;
         private int _taskMemMB;
-        private int _numTables;
-        private int _numRows;
-        private int _numColumns;
+        private int[][] _tablesRowsColumns;
 
         [Inject]
         private ParameterServiceBuilder([Parameter(typeof(TcpPortRangeStart))] int startingPort,
@@ -140,35 +138,34 @@ namespace Org.Apache.REEF.ParameterService
         }
 
         /// <summary>
-        /// Number of tables of parameters to be created on the Parameter Server
+        /// The number of tables of parameters, number of rows per table
+        /// and the number of columns in each row of a table that should
+        /// be created on the Parameter Server.
         /// </summary>
-        /// <param name="numTables"></param>
+        /// <param name="tablesRowsColumns"> The length of the 2d array
+        /// represents the #tables. The length of each 1d array represents the #rows
+        /// for the table corresponding to the index of the 1d array in the 2d array.
+        /// Element (i,j) represents the #columns for row j of table i</param>
         /// <returns></returns>
-        public ParameterServiceBuilder SetNumTables(int numTables)
+        public ParameterServiceBuilder SetTablesRowsColumns(int[][] tablesRowsColumns)
         {
-            _numTables = numTables;
-            return this;
-        }
-
-        /// <summary>
-        /// Number of rows of parameters in each table to be created on the Parameter Server
-        /// </summary>
-        /// <param name="numRows"></param>
-        /// <returns></returns>
-        public ParameterServiceBuilder SetNumRows(int numRows)
-        {
-            _numRows = numRows;
-            return this;
-        }
-
-        /// <summary>
-        /// Number of elements in each row of parameters in each table to be created on the Parameter Server
-        /// </summary>
-        /// <param name="numColumns"></param>
-        /// <returns></returns>
-        public ParameterServiceBuilder SetNumColumns(int numColumns)
-        {
-            _numColumns = numColumns;
+            if (tablesRowsColumns.Length == 0)
+                throw new IllegalStateException("Required number of tables can't be zero");
+            var numTables = tablesRowsColumns.Length;
+            var emptyTables = string.Join(",",
+                Enumerable.Range(0, numTables).Where(i => tablesRowsColumns[i].Length == 0));
+            if(!string.IsNullOrEmpty(emptyTables))
+                throw new IllegalStateException(string.Format("Tables: {0} are empty", emptyTables));
+            var emptyRows = string.Join(", ",
+                Enumerable.Range(0, numTables)
+                    .SelectMany(
+                        i =>
+                            Enumerable.Range(0, tablesRowsColumns[i].Length)
+                                .Where(j => tablesRowsColumns[i][j] == 0)
+                                .Select(j => string.Format("({0},{1})", i, j))));
+            if(!string.IsNullOrEmpty(emptyRows))
+                throw new IllegalStateException(string.Format("The following (Table,Row) pairs are empty: {0}", emptyRows));
+            _tablesRowsColumns = tablesRowsColumns;
             return this;
         }
 
@@ -208,9 +205,7 @@ namespace Org.Apache.REEF.ParameterService
             return new ParameterService(tcpPortProviderConfig, 
                 namingConfig,
                 _numTasks,
-                _numTables,
-                _numRows,
-                _numColumns,
+                _tablesRowsColumns,
                 _nameClient,
                 _communication,
                 _synchronization,
@@ -238,12 +233,13 @@ namespace Org.Apache.REEF.ParameterService
         private int GetMemoryInMBForParameterService()
         {
             var perElementSize = _element == ElementType.Single ? sizeof (float) : sizeof (double);
-            return (int) Math.Ceiling(_numTables*_numRows*_numColumns*perElementSize*2/(double) (_numTasks*1 << 20));
+            var numberOfParameters = _tablesRowsColumns.Select(trc=>trc.Sum()).Sum();
+            return (int) Math.Ceiling(numberOfParameters*perElementSize*2/(double) (_numTasks*1 << 20));
         }
 
         private bool RequiredParametersSet()
         {
-            return _numTasks != 0 && _numTables != 0 && _numRows != 0 && _numColumns != 0 && _taskMemMB != 0;
+            return _numTasks != 0 && _tablesRowsColumns!=null && _taskMemMB != 0;
         }
     }
 
@@ -252,9 +248,7 @@ namespace Org.Apache.REEF.ParameterService
     class ParameterService : IParameterService
     {
         private readonly int _numTasks;
-        private readonly int _numTables;
-        private readonly int _numRows;
-        private readonly int _numColumns;
+        private readonly int[][] _tablesRowsColumns;
         private readonly INameClient _nameClient;
         private const string TaskContextName = "TaskContext";
         private const string ServerIdPrefix = "ParameterServer";
@@ -276,9 +270,7 @@ namespace Org.Apache.REEF.ParameterService
         internal ParameterService(IConfiguration tcpPortProviderConfig,
             IConfiguration namingConfig,
             int numTasks,
-            int numTables,
-            int numRows,
-            int numColumns,
+            int[][] tablesRowsColumns,
             INameClient nameClient,
             CommunicationType communication,
             SynchronizationType synchronization,
@@ -288,9 +280,7 @@ namespace Org.Apache.REEF.ParameterService
             _tcpPortProviderConfig = tcpPortProviderConfig;
             _namingConfig = namingConfig;
             _numTasks = numTasks;
-            _numTables = numTables;
-            _numRows = numRows;
-            _numColumns = numColumns;
+            _tablesRowsColumns = tablesRowsColumns;
             _nameClient = nameClient;
             _communication = communication;
             _synchronization = synchronization;
@@ -391,13 +381,9 @@ namespace Org.Apache.REEF.ParameterService
                     .BindNamedParameter<ParameterClientConfig.SynchronizationType, string>(
                         GenericType<ParameterClientConfig.SynchronizationType>.Class,
                         _synchronization.ToString())
-                    .BindIntNamedParam<ParameterClientConfig.NumberOfTables>(Convert.ToString(_numTables,
-                        CultureInfo.InvariantCulture))
-                    .BindIntNamedParam<ParameterClientConfig.NumberOfRows>(Convert.ToString(_numRows,
-                        CultureInfo.InvariantCulture))
-                    .BindIntNamedParam<ParameterClientConfig.NumberOfColumns>(Convert.ToString(_numColumns,
-                        CultureInfo.InvariantCulture));
-
+                    .BindNamedParameter<ParameterClientConfig.TablesRowsColumns, string>(
+                        GenericType<ParameterClientConfig.TablesRowsColumns>.Class,
+                        string.Join("|", _tablesRowsColumns.Select(rowsArr => string.Join(":", rowsArr))));
             return nameAssignments.Aggregate(configurationBuilder,SerializeNameAssignment).Build();
         }
 

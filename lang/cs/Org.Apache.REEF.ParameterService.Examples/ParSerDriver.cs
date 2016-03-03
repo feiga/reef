@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using Org.Apache.REEF.Common.Tasks;
 using Org.Apache.REEF.Driver;
@@ -25,6 +26,8 @@ namespace Org.Apache.REEF.ParameterService.Examples
         [Inject]
         public ParSerDriver(ParameterServiceBuilder parameterServiceBuilder)
         {
+            var tablesRowsColumns = new int[1][];
+            tablesRowsColumns[0] = Enumerable.Repeat(1000, 1000).ToArray();
             _parService =
                 parameterServiceBuilder.SetCommunicationType(CommunicationType.Reduce)
                     .SetSynchronizationType(SynchronizationType.Average)
@@ -32,9 +35,7 @@ namespace Org.Apache.REEF.ParameterService.Examples
                     .SetNumberOfTasks(5)
                     .SetTaskCores(2)
                     .SetTaskMemoryMB(512)
-                    .SetNumTables(1)
-                    .SetNumRows(1000)
-                    .SetNumColumns(1000)
+                    .SetTablesRowsColumns(tablesRowsColumns)
                     .Build();
         }
 
