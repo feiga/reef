@@ -258,12 +258,12 @@ namespace Org.Apache.REEF.ParameterService
         private readonly INameClient _nameClient;
         private const string TaskContextName = "TaskContext";
         private const string ServerIdPrefix = "ParameterServer";
+        private const string ClientIdPrefix = "ParameterClient";
 
         private static readonly Logger LOGGER = Logger.GetLogger(typeof(ParameterService));
 
         private int _contextIds;
-        private int _serverIds;
-        private int _tasksAdded;
+        private int _componentIds;
         private readonly object _lock = new object();
         private readonly ConcurrentQueue<Tuple<IConfiguration, IActiveContext>> _taskTuples = new ConcurrentQueue<Tuple<IConfiguration, IActiveContext>>();
         private readonly CommunicationType _communication;
@@ -319,7 +319,7 @@ namespace Org.Apache.REEF.ParameterService
                 return;
 
             LOGGER.Log(Level.Verbose, "Expected number of tasks have been queued. So launching the Tasks");
-            var clientConf = GetParameterClientConfiguration();
+            var clientConf = GetParameterServiceClientConfiguration();
             Parallel.ForEach(_taskTuples,
                 tuple =>
                 {
@@ -337,39 +337,50 @@ namespace Org.Apache.REEF.ParameterService
                     string.Format(CultureInfo.InvariantCulture, "{0}-{1}", TaskContextName, contextNum)).Build();
         }
 
-        public IConfiguration GetParameterServerConfiguration()
+        public IConfiguration GetParameterServiceConfiguration()
         {
+            //Check if this works
             var serviceConfiguration =
-                ServiceConfiguration.ConfigurationModule.Set(ServiceConfiguration.Services,
-                    GenericType<ParameterServer>.Class).Build();
-            var serverId = Interlocked.Increment(ref _serverIds);
-            var idConfig =
+                ServiceConfiguration.ConfigurationModule
+                    .Set(ServiceConfiguration.Services, GenericType<ParameterServer>.Class)
+                    .Set(ServiceConfiguration.Services, GenericType<ParameterClient>.Class)
+                    .Build();
+            var componentId = Interlocked.Increment(ref _componentIds);
+            var serverIdConfig =
                 TangFactory.GetTang().NewConfigurationBuilder()
                     .BindNamedParameter<ParameterServerId, string>(GenericType<ParameterServerId>.Class,
-                        GetServerId(serverId)).Build();
+                        GetServerId(componentId)).Build();
 
-            return Configurations.Merge(serviceConfiguration, idConfig, _tcpPortProviderConfig, _namingConfig);
+            var clientIdConfig =
+                TangFactory.GetTang().NewConfigurationBuilder()
+                    .BindNamedParameter<ParameterClientId, string>(GenericType<ParameterClientId>.Class,
+                        GetClientId(componentId)).Build();
+
+            return Configurations.Merge(serviceConfiguration, serverIdConfig, clientIdConfig, _tcpPortProviderConfig, _namingConfig);
         }
 
-        private static string GetServerId(int serverId)
+        private static string GetServerId(int componentId)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", ServerIdPrefix, serverId);
+            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", ServerIdPrefix, componentId);
         }
 
-
-        private IConfiguration GetParameterClientConfiguration()
+        private static string GetClientId(int componentId)
         {
-            var serverIds = Enumerable.Range(0, _numTasks).Select(GetServerId).ToList();
-            var nameAssignments = _nameClient.Lookup(serverIds);
-            if (nameAssignments.Any(na => na == null))
+            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", ClientIdPrefix, componentId);
+        }
+
+        private IConfiguration GetParameterServiceClientConfiguration()
+        {
+            var serverIds = Enumerable.Range(0, _numTasks).Select(GetServerId);
+            var clientIds = Enumerable.Range(0, _numTasks).Select(GetClientId);
+            var componentIds = serverIds.Concat(clientIds).ToList();
+            var nameAssignments = _nameClient.Lookup(componentIds);
+            if (nameAssignments.Any(na => na.Endpoint == null))
             {
                 LOGGER.Log(Level.Error,
-                    "Parameter Servers {0} have not yet registered. It is an error to call this function before all servers have registered.",
-                    string.Join(",",
-                        Enumerable.Range(0, _numTasks)
-                            .Where(i => nameAssignments[i] == null)
-                            .Select(GetServerId)));
-                throw new IllegalStateException("Some parameter servers have not yet registered.");
+                    "Parameter Service Components {0} have not yet registered. It is an error to call this function before all components have registered.",
+                    string.Join(",", nameAssignments.Where(na => na.Endpoint == null).Select(na => na.Identifier)));
+                throw new IllegalStateException("Some parameter service components have not yet registered.");
             }
             var configurationBuilder =
                 TangFactory.GetTang()
@@ -393,7 +404,7 @@ namespace Org.Apache.REEF.ParameterService
         private static ICsConfigurationBuilder SerializeNameAssignment(ICsConfigurationBuilder builder, NameAssignment assignment)
         {
             var idAddressPort = new IdAddressPort(assignment.Identifier, new AddressPort(assignment.Endpoint));
-            return builder.BindSetEntry<ParameterClientConfig.ServerAddresses, string>(idAddressPort.ToString());
+            return builder.BindSetEntry<ParameterClientConfig.ComponentAddresses, string>(idAddressPort.ToString());
         }
     }
 }

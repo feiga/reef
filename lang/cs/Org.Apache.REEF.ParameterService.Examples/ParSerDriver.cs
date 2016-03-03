@@ -47,7 +47,7 @@ namespace Org.Apache.REEF.ParameterService.Examples
         public void OnNext(IAllocatedEvaluator allocatedEvaluator)
         {
             var localContextConf = _parService.GetLocalContextConfiguration();
-            var sharedContextConf = _parService.GetParameterServerConfiguration();
+            var sharedContextConf = _parService.GetParameterServiceConfiguration();
             allocatedEvaluator.SubmitContextAndService(localContextConf, sharedContextConf);
         }
 

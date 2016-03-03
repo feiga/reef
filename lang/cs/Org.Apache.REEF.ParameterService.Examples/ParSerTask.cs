@@ -11,13 +11,13 @@ namespace Org.Apache.REEF.ParameterService.Examples
 {
     class ParSerTask : ITask
     {
-        private readonly IParameterClient _psClient;
+        private readonly IParameterServiceClient _paramServiceClient;
         private static readonly Logger Logger = Logger.GetLogger(typeof(ParSerTask));
 
         [Inject]
-        public ParSerTask(IParameterClient psClient)
+        public ParSerTask(IParameterServiceClient paramServiceClient)
         {
-            _psClient = psClient;
+            _paramServiceClient = paramServiceClient;
         }
 
         public void Dispose()

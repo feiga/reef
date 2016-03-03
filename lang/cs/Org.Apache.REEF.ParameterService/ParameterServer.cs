@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Org.Apache.REEF.Common.Io;
 using Org.Apache.REEF.Tang.Annotations;
 using Org.Apache.REEF.Wake.Remote;
 
 namespace Org.Apache.REEF.ParameterService
 {
-    [NamedParameter("The id to use to register with the Name Service")]
-    public class ParameterServerId : Name<string> { }
-
-
-    internal class ParameterServer : IDisposable
+    internal class ParameterServer : IParameterServer
     {
         private readonly string _serverId;
         private readonly INameClient _nameClient;
@@ -36,6 +29,12 @@ namespace Org.Apache.REEF.ParameterService
             //Get the ip & port it is listerning
             //Register that ip & port
             return new IPEndPoint(IPAddress.Loopback, tcpPortProvider.First());
+        }
+
+        public void UpdateOtherComponentAddresses(IDictionary<string, AddressPort> addressPorts)
+        {
+            //Update the ip & ports of all involved components
+            //Be sure to ignore your own! :)
         }
 
         public void Dispose()

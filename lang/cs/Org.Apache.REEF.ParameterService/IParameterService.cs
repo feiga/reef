@@ -9,7 +9,7 @@ namespace Org.Apache.REEF.ParameterService
     {
         void RequestEvaluators();
         IConfiguration GetLocalContextConfiguration();
-        IConfiguration GetParameterServerConfiguration();
+        IConfiguration GetParameterServiceConfiguration();
         void QueueTask(IConfiguration partialTaskConfig, IActiveContext activeContext);
     }
 }
