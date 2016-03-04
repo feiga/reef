@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1B1B4858-FDC6-478C-AE1C-187D37A1BF09}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{43BE897E-833D-40DD-B1FE-04753F1DF0A3}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Org.Apache.REEF.ParameterService</RootNamespace>
-    <AssemblyName>Org.Apache.REEF.ParameterService</AssemblyName>
+    <RootNamespace>Org.Apache.REEF.ParameterService.Multiverso.Bridge.Test</RootNamespace>
+    <AssemblyName>Org.Apache.REEF.ParameterService.Multiverso.Bridge.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -37,6 +39,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -46,11 +49,9 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,41 +61,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IParameterService.cs" />
-    <Compile Include="IParameterClient.cs" />
-    <Compile Include="ParameterServer.cs" />
-    <Compile Include="ParameterService.cs" />
-    <Compile Include="ParameterClient.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Org.Apache.REEF.Common\Org.Apache.REEF.Common.csproj">
-      <Project>{545a0582-4105-44ce-b99c-b1379514a630}</Project>
-      <Name>Org.Apache.REEF.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Org.Apache.REEF.Driver\Org.Apache.REEF.Driver.csproj">
-      <Project>{a6baa2a7-f52f-4329-884e-1bcf711d6805}</Project>
-      <Name>Org.Apache.REEF.Driver</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Org.Apache.REEF.Network\Org.Apache.REEF.Network.csproj">
-      <Project>{883ce800-6a6a-4e0a-b7fe-c054f4f2c1dc}</Project>
-      <Name>Org.Apache.REEF.Network</Name>
-    </ProjectReference>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Org.Apache.REEF.ParameterService.Multiverso.Bridge\Org.Apache.REEF.ParameterService.Multiverso.Bridge.vcxproj">
       <Project>{987e7879-e6fc-4ca5-a20e-e7f6d4af2b73}</Project>
       <Name>Org.Apache.REEF.ParameterService.Multiverso.Bridge</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Org.Apache.REEF.Tang\Org.Apache.REEF.Tang.csproj">
-      <Project>{97dbb573-3994-417a-9f69-ffa25f00d2a6}</Project>
-      <Name>Org.Apache.REEF.Tang</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Org.Apache.REEF.Utilities\Org.Apache.REEF.Utilities.csproj">
-      <Project>{79e7f89a-1dfb-45e1-8d43-d71a954aeb98}</Project>
-      <Name>Org.Apache.REEF.Utilities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Org.Apache.REEF.Wake\Org.Apache.REEF.Wake.csproj">
-      <Project>{cdfb3464-4041-42b1-9271-83af24cd5008}</Project>
-      <Name>Org.Apache.REEF.Wake</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

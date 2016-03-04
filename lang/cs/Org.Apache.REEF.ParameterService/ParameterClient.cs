@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net;
 using Org.Apache.REEF.Tang.Annotations;
 using Org.Apache.REEF.Utilities.Logging;
+using Org.Apache.REEF.ParameterService.Multiverso.Bridge;
 
 namespace Org.Apache.REEF.ParameterService
 {
@@ -145,66 +146,113 @@ namespace Org.Apache.REEF.ParameterService
             _numberOfTables = numberOfTables;
             _numberOfRows = numberOfRows;
             _numberOfColumns = numberOfColumns;
+
+            MultiversoWrapper.InitWorker(_numberOfTables);
         }
+
 
         public void Dispose()
         {
             throw new NotImplementedException();
         }
 
-        public void Add(int tableId, long rowId, float[] pDelta, float coeff)
+        void Get(int tableId, int[] pValue)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Get(tableId, pValue);
         }
 
-        public void Add(int tableId, long rowId, int[] pDelta, float coeff)
+        void Get(int tableId, float[] pValue)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Get(tableId, pValue);
         }
 
-        public void AsyncGet(int tableId, long[] rows, float[][] pValues)
+        void Get(int tableId, int rowId, int[] pValue) 
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Get(tableId, rowId, pValue);
         }
 
-        public void AsyncGet(int tableId, long[] rows, int[][] pValues)
+        void Get(int tableId, int rowId, float[] pValue)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Get(tableId, rowId, pValue);
         }
 
-        public void Barrier()
+        void Add(int tableId, int[] pValue)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Add(tableId, pValue);
         }
 
-        public long BatchLoad(int tableId, long[] rows)
+        void Add(int tableId, float[] pValue)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Add(tableId, pValue);
         }
 
-        public void Clock()
+        void Add(int tableId, int rowId, int[] pDelta)
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Add(tableId, rowId, pDelta);
+        }
+        void Add(int tableId, int rowId, float[] pDelta)
+        {
+            MultiversoWrapper.Add(tableId, rowId, pDelta);
         }
 
-        public void Get(int tableId, long rowId, float[] pValue)
+        void Barrier() 
         {
-            throw new NotImplementedException();
+            MultiversoWrapper.Barrier();
         }
 
-        public void Get(int tableId, long rowId, int[] pValue)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Add(int tableId, long rowId, float[] pDelta, float coeff)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public void Set(int tableId, long rowId, float[] pValue)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Add(int tableId, long rowId, int[] pDelta, float coeff)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public void Set(int tableId, long rowId, int[] pValue)
-        {
-            throw new NotImplementedException();
-        }
+        //public void AsyncGet(int tableId, long[] rows, float[][] pValues)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void AsyncGet(int tableId, long[] rows, int[][] pValues)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Barrier()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public long BatchLoad(int tableId, long[] rows)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Clock()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Get(int tableId, long rowId, float[] pValue)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Get(int tableId, long rowId, int[] pValue)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Set(int tableId, long rowId, float[] pValue)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Set(int tableId, long rowId, int[] pValue)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
