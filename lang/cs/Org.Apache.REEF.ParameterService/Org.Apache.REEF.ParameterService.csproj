@@ -60,11 +60,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IParameterService.cs" />
     <Compile Include="IParameterClient.cs" />
+    <Compile Include="IParameterServer.cs" />
+    <Compile Include="IParameterService.cs" />
+    <Compile Include="IParameterServiceClient.cs" />
+    <Compile Include="IParameterServiceComponent.cs" />
+    <Compile Include="ParameterClient.cs" />
     <Compile Include="ParameterServer.cs" />
     <Compile Include="ParameterService.cs" />
-    <Compile Include="ParameterClient.cs" />
+    <Compile Include="ParameterServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
